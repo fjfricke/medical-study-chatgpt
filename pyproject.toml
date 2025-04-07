@@ -12,7 +12,8 @@ dependencies = [
     "openai (>=1.65.1,<2.0.0)",
     "streamlit-chat (>=0.1.1,<0.2.0)",
     "pywebview (>=5.4,<6.0)",
-    "python-dotenv (>=1.1.0,<2.0.0)"
+    "python-dotenv (>=1.1.0,<2.0.0)",
+    "markdown-pdf (>=1.6,<2.0)"
 ]
 
 

@@ -5,6 +5,7 @@ import os
 import json
 import shutil
 import sys
+from markdown_pdf import MarkdownPdf, Section
 
 SYSTEM_MESSAGE = "Du bist ein hilfreicher Assistent, der Patientenaufklärung zu einer Operation betreibt."
 ASSISTANT_START_MESSAGE = "Ich kann dir bei Infos zu deiner OP helfen. Was für Fragen hast du?"
@@ -135,6 +136,14 @@ with st.sidebar:
 # Add a button to download the chat_histories folder
 with st.sidebar:
     if st.button("Download Chat Histories"):
+        # for each .md file in the chat_histories folder, convert it to a pdf and save it in the same folder
+        for file in os.listdir(CHAT_HISTORY_DIR):
+            if file.endswith(".md"):
+                content = open(os.path.join(CHAT_HISTORY_DIR, file), "r").read()
+                pdf_file_path = os.path.join(CHAT_HISTORY_DIR, file.replace(".md", ".pdf"))
+                pdf = MarkdownPdf(toc_level=2)
+                pdf.add_section(Section(content))
+                pdf.save(pdf_file_path)
         zip_file_path = "chat_histories.zip"
         shutil.make_archive("chat_histories", "zip", CHAT_HISTORY_DIR)
         with open(zip_file_path, "rb") as f:
