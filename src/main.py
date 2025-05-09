@@ -157,12 +157,12 @@ else:
 
 
     # Define the dialog function
-    @st.dialog("Bist du sicher, dass du zurücksetzen möchtest?")
+    @st.dialog("Bist du sicher, dass du den Chat schließen möchtest?")
     def show_reset_dialog():
         st.write("Dies wird die Sitzung des Patienten für den nächsten Patienten löschen. Gespeicherte Inhalte werden nicht gelöscht.")
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Ja, zurücksetzen"):
+            if st.button("Ja, nächster Patient"):
                 st.session_state.user_id = ""
                 st.session_state.chat_history = []
                 st.rerun()
@@ -172,13 +172,13 @@ else:
 
     # Reset button to clear user_id and chat history
     with st.sidebar:
-        if st.button("Zurücksetzen"):
+        if st.button("Nächster Patient"):
             show_reset_dialog()
 
     # Add a button to download the chat_histories folder
     if st.session_state.logged_in_as == "admin":
         with st.sidebar:
-            if st.button("Chat-Historien zum Download vorbereiten"):
+            if st.button("Download vorbereiten"):
                 # Für jede .md-Datei im Ordner chat_histories, konvertiere sie in eine PDF und speichere sie im selben Ordner
                 for file in os.listdir(CHAT_HISTORY_DIR):
                     if file.endswith(".md"):
