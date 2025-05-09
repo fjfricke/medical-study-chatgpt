@@ -88,8 +88,16 @@ else:
     if not st.session_state.user_id:
         user_input_id = st.text_input("Gib deine anonymisierte Patienten-ID ein, um den Chat zu starten..")
         if user_input_id:
-            st.session_state.user_id = user_input_id
-            st.rerun()  # Force a rerun after setting user_id
+            chat_file_path = os.path.join(CHAT_HISTORY_DIR, f"{user_input_id}.md")
+            json_file_path = os.path.join(CHAT_HISTORY_DIR, f"{user_input_id}.json")
+            pdf_file_path = os.path.join(CHAT_HISTORY_DIR, f"{user_input_id}.pdf")
+
+            if os.path.exists(chat_file_path) or os.path.exists(json_file_path) or os.path.exists(pdf_file_path):
+                # Show error dialog
+                st.error(f"Dateien für die Patienten-ID {user_input_id} existieren bereits. Bitte verwende eine andere ID.")
+            else:
+                st.session_state.user_id = user_input_id
+                st.rerun()  # Force a rerun after setting user_id
     user_id = st.session_state.user_id
 
     # Running the chat window
@@ -149,29 +157,29 @@ else:
 
 
     # Define the dialog function
-    @st.dialog("Are you sure you want to reset?")
+    @st.dialog("Bist du sicher, dass du zurücksetzen möchtest?")
     def show_reset_dialog():
-        st.write("This will clear the patient's session for the next patient. Stored content will not be deleted.")
+        st.write("Dies wird die Sitzung des Patienten für den nächsten Patienten löschen. Gespeicherte Inhalte werden nicht gelöscht.")
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Yes, reset"):
+            if st.button("Ja, zurücksetzen"):
                 st.session_state.user_id = ""
                 st.session_state.chat_history = []
                 st.rerun()
         with col2:
-            if st.button("Cancel"):
+            if st.button("Abbrechen"):
                 st.rerun()
 
     # Reset button to clear user_id and chat history
     with st.sidebar:
-        if st.button("Reset"):
+        if st.button("Zurücksetzen"):
             show_reset_dialog()
 
     # Add a button to download the chat_histories folder
     if st.session_state.logged_in_as == "admin":
         with st.sidebar:
-            if st.button("Prepare Download of Chat Histories"):
-                # for each .md file in the chat_histories folder, convert it to a pdf and save it in the same folder
+            if st.button("Chat-Historien zum Download vorbereiten"):
+                # Für jede .md-Datei im Ordner chat_histories, konvertiere sie in eine PDF und speichere sie im selben Ordner
                 for file in os.listdir(CHAT_HISTORY_DIR):
                     if file.endswith(".md"):
                         content = open(os.path.join(CHAT_HISTORY_DIR, file), "r").read()
@@ -183,40 +191,40 @@ else:
                 shutil.make_archive("chat_histories", "zip", CHAT_HISTORY_DIR)
                 with open(zip_file_path, "rb") as f:
                     st.download_button(
-                        label="Download Chat Histories as ZIP",
+                        label="Chat-Historien als ZIP herunterladen",
                         data=f,
                         file_name="chat_histories.zip",
                         mime="application/zip"
                     )
 
     # Define the dialog function
-    @st.dialog("Are you sure you want to logout?")
+    @st.dialog("Bist du sicher, dass du dich abmelden möchtest?")
     def show_logout_dialog():
-        st.write("This will logout and clear the current patient session. Stored content will not be deleted.")
+        st.write("Dies wird die aktuelle Sitzung des Patienten schließen und dich abmelden. Gespeicherte Inhalte werden nicht gelöscht.")
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Yes, logout"):
+            if st.button("Ja, abmelden"):
                 st.session_state.user_id = ""
                 st.session_state.chat_history = []
                 st.session_state.logged_in = False
                 st.session_state.logged_in_as = ""
                 st.rerun()
         with col2:
-            if st.button("Cancel"):
+            if st.button("Abbrechen"):
                 st.rerun()
 
     # Reset button to clear user_id and chat history
     with st.sidebar:
-        if st.button("Logout"):
+        if st.button("Abmelden"):
             show_logout_dialog()
 
     if st.session_state.logged_in_as == "admin":
-        @st.dialog("Are you sure you want to wipe all data?")
+        @st.dialog("Bist du sicher, dass du alle Daten löschen möchtest?")
         def show_wipe_dialog():
-            st.write("This will wipe all data from the database. This action is irreversible.")
+            st.write("Dies wird alle Daten aus der Datenbank mitsamt allen Chat-Historien löschen. Diese Aktion ist unwiderruflich.")
             col1, col2 = st.columns(2)
             with col1:
-                if st.button("Yes, wipe"):
+                if st.button("Ja, löschen"):
                     st.session_state.user_id = ""
                     st.session_state.chat_history = []
                     # remove all files in the chat_histories folder
@@ -224,8 +232,8 @@ else:
                         os.remove(os.path.join(CHAT_HISTORY_DIR, file))
                     st.rerun()
             with col2:
-                if st.button("Cancel"):
+                if st.button("Abbrechen"):
                     st.rerun()
         with st.sidebar:
-            if st.button("Wipe all data"):
+            if st.button("Alle Daten löschen"):
                 show_wipe_dialog()
