@@ -60,7 +60,12 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 # Configure sidebar to be collapsed by default
-st.set_page_config(layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(
+    layout="wide",
+    initial_sidebar_state="collapsed",
+    page_title="Patientenaufklärungsstudie ChatGPT",
+    page_icon=":material/medical_information:"
+)
 
 # Login functionality
 if "logged_in" not in st.session_state:
