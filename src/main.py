@@ -4,15 +4,14 @@ import openai
 import os
 import json
 import shutil
-import sys
 from markdown_pdf import MarkdownPdf, Section
 import hashlib
 
 SYSTEM_MESSAGE = "Du bist ein hilfreicher Assistent, der Patientenaufklärung zu einer Operation betreibt."
 ASSISTANT_START_MESSAGE = "Ich kann dir bei Infos zu deiner OP helfen. Was für Fragen hast du?"
 
-if getattr(sys, 'frozen', False):  # Check if running as a PyInstaller executable
-    base_path = sys._MEIPASS
+if os.getenv("FLY_APP_NAME"):  # Check if running on Fly.io
+    base_path = "/data"  # Use the Fly.io mounted volume path
 else:
     base_path = os.getcwd()
 
