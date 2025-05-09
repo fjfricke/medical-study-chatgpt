@@ -73,8 +73,8 @@ if "logged_in" not in st.session_state:
 
 if not st.session_state.logged_in:
     st.title("Login")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    username = st.text_input("Nutzername")
+    password = st.text_input("Passwort", type="password")
     if st.button("Login"):
         # Replace this with your actual authentication logic
         if username in ["admin", "study"] and hash_password(password) == PASSWORD_HASH:
@@ -82,7 +82,7 @@ if not st.session_state.logged_in:
             st.session_state.logged_in_as = username
             st.rerun()
         else:
-            st.error("Invalid username or password")
+            st.error("Ungültiger Nutzername oder Passwort")
 else:
     # Rest of the app
     st.title("Patientenaufklärungsstudie mittels ChatGPT")
