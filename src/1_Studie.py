@@ -62,7 +62,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
     page_title="Patientenaufklärungsstudie ChatGPT",
-    page_icon=":material/medical_information:"
+    page_icon=":material/medical_information:",
 )
 
 # Login functionality
@@ -121,17 +121,24 @@ else:
         json_file_path = os.path.join(CHAT_HISTORY_DIR, f"{user_id}.json")
 
         if "chat_history" not in st.session_state or st.session_state.chat_history == []:
-            st.session_state.chat_history = [
-                {
-                    "role": "system",
+            if ASSISTANT_START_MESSAGE != "":
+                st.session_state.chat_history = [
+                    {
+                        "role": "system",
                     "content": SYSTEM_MESSAGE
                 },
                 {
                     "role": "assistant",
                     "content": ASSISTANT_START_MESSAGE
-                }
-            ]
-
+                    }
+                ]
+            else:
+                st.session_state.chat_history = [
+                    {
+                        "role": "system",
+                        "content": SYSTEM_MESSAGE
+                    }
+                ]
         # Display chat history using st.chat_message
         for chat in st.session_state.chat_history:
             if chat["role"] != "system":  # Skip system messages

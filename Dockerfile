@@ -26,4 +26,4 @@ ENV STREAMLIT_SERVER_PORT=8501
 ENV STREAMLIT_SERVER_ADDRESS=0.0.0.0
 
 # Run the Streamlit app
-CMD ["poetry", "run", "streamlit", "run", "src/main.py"]
+CMD ["poetry", "run", "streamlit", "run", "src/1_Studie.py"]

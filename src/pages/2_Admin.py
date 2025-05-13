@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import streamlit as st
 
 if os.getenv("FLY_APP_NAME"):  # Check if running on Fly.io
@@ -25,9 +26,25 @@ def load_settings():
             return json.load(f)
 
 # Save settings
-def save_settings(settings):
-    with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
-        json.dump(settings, f, indent=4, ensure_ascii=False)
+@st.dialog("Speichere die Einstellungen...")
+def save_settings(settings_to_save):
+    st.write("Dies wird SYSTEM MESSAGE und ASSISTANT START MESSAGE permanent überschreiben. Dabei wird der aktuelle Patientenchat beendet. Vorherige Chats werden nicht gelöscht.")
+
+    # Two columns for Save and Cancel buttons
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("Speichern"):
+            with open(SETTINGS_FILE, "w", encoding="utf-8") as f:
+                json.dump(settings_to_save, f, indent=4, ensure_ascii=False)
+            st.success("Einstellungen gespeichert!")
+            time.sleep(1)
+            st.rerun()  # Reload the app to apply changes
+
+    with col2:
+        if st.button("Abbrechen"):
+            st.info("Speichern abgebrochen.")
+            st.rerun()  # Close the dialog without saving
 
 # Get existing patient IDs
 def get_existing_patients():
@@ -53,11 +70,12 @@ if st.session_state.get("logged_in_as") == "admin":
     system_message = st.text_area("System Message", value=settings["system_message"])
     assistant_start_message = st.text_area("Assistant Start Message", value=settings["assistant_start_message"])
 
-    if st.button("Speichern"):
-        settings["system_message"] = system_message
-        settings["assistant_start_message"] = assistant_start_message
-        save_settings(settings)
-        st.success("Einstellungen wurden gespeichert!")
+    if st.button("Speichern", key="save_settings_main_admin_button"):
+        settings_to_save = {
+            "system_message": system_message,
+            "assistant_start_message": assistant_start_message
+        }
+        save_settings(settings_to_save)
 
     # Display existing patients
     st.subheader("Vorhandene Patienten")
@@ -71,24 +89,25 @@ if st.session_state.get("logged_in_as") == "admin":
 
     # Add functionality to delete all data
     st.subheader("Alle Daten löschen")
-    if st.session_state.logged_in_as == "admin":
-        @st.dialog("Bist du sicher, dass du alle Daten löschen möchtest?")
-        def show_wipe_dialog():
-            st.write("Dies wird alle Daten aus der Datenbank mitsamt allen Chat-Historien löschen. Diese Aktion ist unwiderruflich.")
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("Ja, löschen"):
-                    st.session_state.user_id = ""
-                    st.session_state.chat_history = []
-                    # remove all files in the chat_histories folder
-                    for file in os.listdir(CHAT_HISTORY_DIR):
-                        os.remove(os.path.join(CHAT_HISTORY_DIR, file))
-                    st.rerun()
-            with col2:
-                if st.button("Abbrechen"):
-                    st.rerun()
-        if st.button("Alle Daten löschen"):
-            show_wipe_dialog()
+
+    @st.dialog("Bist du sicher, dass du alle Daten löschen möchtest?")
+    def show_wipe_dialog():
+        st.write("Dies wird alle Daten aus der Datenbank mitsamt allen Chat-Historien löschen. Diese Aktion ist unwiderruflich.")
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Ja, löschen"):
+                st.session_state.user_id = ""
+                st.session_state.chat_history = []
+                # remove all files in the chat_histories folder
+                for file in os.listdir(CHAT_HISTORY_DIR):
+                    os.remove(os.path.join(CHAT_HISTORY_DIR, file))
+                st.rerun()
+        with col2:
+            if st.button("Abbrechen"):
+                st.rerun()
+    
+    if st.button("Alle Daten löschen"):
+        show_wipe_dialog()
 
 else:
     st.error("Du hast keine Berechtigung, diese Seite zu sehen.")
