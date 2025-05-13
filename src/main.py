@@ -7,9 +7,6 @@ import shutil
 from markdown_pdf import MarkdownPdf, Section
 import hashlib
 
-SYSTEM_MESSAGE = "Du bist ein hilfreicher Assistent, der Patientenaufklärung zu einer Operation betreibt."
-ASSISTANT_START_MESSAGE = "Ich kann dir bei Infos zu deiner OP helfen. Was für Fragen hast du?"
-
 if os.getenv("FLY_APP_NAME"):  # Check if running on Fly.io
     base_path = "/data"  # Use the Fly.io mounted volume path
 else:
@@ -19,6 +16,7 @@ load_dotenv(dotenv_path=os.path.join(base_path, ".env"))
 # Set OpenAI API key from environment variable
 openai.api_key = os.getenv("OPENAI_API_KEY")
 PASSWORD_HASH = os.getenv("PASSWORD_HASH")
+SETTINGS_FILE = os.path.join(base_path, "settings.json")
 
 # Directory to save chat histories
 CHAT_HISTORY_DIR = os.path.join(base_path, "chat_histories")
@@ -86,6 +84,18 @@ if not st.session_state.logged_in:
 else:
     # Rest of the app
     st.title("Patientenaufklärungsstudie mittels ChatGPT")
+
+    def load_settings():
+        if not os.path.exists(SETTINGS_FILE):
+            st.error("Die System Messages existieren noch nicht. Bitte erstelle sie im Admin-Panel.")
+            st.stop()  # Stop execution to prevent further errors
+        else:
+            with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+
+    settings = load_settings()
+    SYSTEM_MESSAGE = settings["system_message"]
+    ASSISTANT_START_MESSAGE = settings["assistant_start_message"]
 
     # Setting the patient id
     if "user_id" not in st.session_state:
@@ -222,23 +232,3 @@ else:
     with st.sidebar:
         if st.button("Abmelden"):
             show_logout_dialog()
-
-    if st.session_state.logged_in_as == "admin":
-        @st.dialog("Bist du sicher, dass du alle Daten löschen möchtest?")
-        def show_wipe_dialog():
-            st.write("Dies wird alle Daten aus der Datenbank mitsamt allen Chat-Historien löschen. Diese Aktion ist unwiderruflich.")
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("Ja, löschen"):
-                    st.session_state.user_id = ""
-                    st.session_state.chat_history = []
-                    # remove all files in the chat_histories folder
-                    for file in os.listdir(CHAT_HISTORY_DIR):
-                        os.remove(os.path.join(CHAT_HISTORY_DIR, file))
-                    st.rerun()
-            with col2:
-                if st.button("Abbrechen"):
-                    st.rerun()
-        with st.sidebar:
-            if st.button("Alle Daten löschen"):
-                show_wipe_dialog()
